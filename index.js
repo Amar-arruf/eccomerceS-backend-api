@@ -8,10 +8,10 @@ const cookieParser = require("cookie-parser");
 require("dotenv").config();
 
 const app = express();
-const PORT = 5999;
+const PORT = 3000;
 
 const corsOptions = {
-  origin: "http://localhost:3000", // Atur origin sesuai domain Next.js
+  origin: "https://ecommerce-sarung.vercel.app", // Atur origin sesuai domain Next.js
   credentials: true, // Izinkan pengiriman cookie
 };
 app.use(cors(corsOptions));
@@ -23,6 +23,11 @@ app.use(
     secret: process.env.secret_session,
     resave: false,
     saveUninitialized: true,
+    cookie: {
+      secure: true,
+      httpOnly: true,
+      sameSite: "none",
+    },
   })
 );
 
