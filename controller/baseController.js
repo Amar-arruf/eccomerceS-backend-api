@@ -91,7 +91,7 @@ deleteData = (req, res) => {
 
 getDataCategory = (req, res) => {
   try {
-    const query = `SELECT category_list.ID, category_list.NAMA_CATEGORY, produk.thumbnail 
+    const query = `SELECT category_list.ID, MAX(category_list.NAMA_CATEGORY) AS NAMA_CATEGORY, MAX(produk.thumbnail) AS thumbnail 
                    FROM category_list 
                    JOIN produk ON category_list.ID = produk.Category
                    GROUP BY category_list.ID`;

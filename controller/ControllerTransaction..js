@@ -2,8 +2,21 @@ const { connection } = require("../config/db");
 
 const getTransaction = (req, res) => {
   try {
-    const query =
-      "SELECT itemorder.OrderID, itemorder.url_image, user.Nama, GROUP_CONCAT(DISTINCT Produk_Name SEPARATOR ', ') AS Nama_Produk, COUNT(Quantity) AS Jumlah_Item, userorder.tanggal_order FROM itemorder JOIN userorder ON itemorder.OrderID = userorder.OrderID JOIN user ON itemorder.User_ID = user.AkunID GROUP BY itemorder.OrderID;";
+    const query = `SELECT
+      itemorder.OrderID,
+      MAX(itemorder.url_image) AS url_image,
+      user.Nama,
+      GROUP_CONCAT(DISTINCT itemorder.Produk_Name SEPARATOR ', ') AS Nama_Produk,
+      COUNT(itemorder.Quantity) AS Jumlah_Item,
+      userorder.tanggal_order 
+    FROM
+      itemorder 
+    JOIN
+      userorder ON itemorder.OrderID = userorder.OrderID 
+    JOIN
+      user ON itemorder.User_ID = user.AkunID 
+    GROUP BY
+      itemorder.OrderID, user.Nama, userorder.tanggal_order;`;
     connection.query(query, (err, result, field) => {
       if (err) {
         res.status(400).send(err.message);
@@ -18,7 +31,30 @@ const getTransaction = (req, res) => {
 const getTransactionDetail = (req, res) => {
   try {
     const params = req.params;
-    const query = `SELECT itemorder.url_image, GROUP_CONCAT(itemorder.Produk_Name SEPARATOR ", ") as Nama_Produk, user.Nama, itemorder.OrderID,itemorder.StatusPay, userorder.tanggal_order, SUM(itemorder.TotalHarga) as TotalHarga, user.Telepon, user.Alamat1, user.Alamat2, user.kodepos, user.provinsi, user.Kota FROM itemorder JOIN userorder ON itemorder.OrderID = userorder.OrderID JOIN user ON itemorder.User_ID = user.AkunID WHERE itemorder.OrderID = ? GROUP BY userorder.OrderID;`;
+    const query = `SELECT
+    MAX(itemorder.url_image) as url_image,
+    GROUP_CONCAT(itemorder.Produk_Name SEPARATOR ", ") as Nama_Produk,
+    user.Nama,
+    itemorder.OrderID,
+    MAX(itemorder.StatusPay) as StatusPay,
+    MAX(userorder.tanggal_order) as tanggal_order,
+    SUM(itemorder.TotalHarga) as TotalHarga,
+    MAX(user.Telepon) as Telepon,
+    MAX(user.Alamat1) as Alamat1,
+    MAX(user.Alamat2) as Alamat2,
+    MAX(user.kodepos) as kodepos,
+    MAX(user.provinsi) as provinsi,
+    MAX(user.Kota) as Kota
+  FROM
+    itemorder 
+  JOIN
+    userorder ON itemorder.OrderID = userorder.OrderID 
+  JOIN
+    user ON itemorder.User_ID = user.AkunID 
+  WHERE
+    itemorder.OrderID = ? 
+  GROUP BY
+    itemorder.OrderID, user.Nama;`;
     connection.query(query, Number(req.params.id), (err, result, field) => {
       if (err) {
         res.status(400).send(err.message);
